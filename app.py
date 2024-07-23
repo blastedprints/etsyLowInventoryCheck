@@ -5,22 +5,11 @@ from email.mime.text import MIMEText
 import schedule
 import time
 from datetime import datetime
-
-# Etsy API Credentials (Replace with your actual credentials)
-ETSY_API_KEY = 'mrkcx0b9acyaop6v6xdnanfx'
-ETSY_SHOP_ID = 'blastedprints'
-
-# Email Configuration (Replace with your credentials and settings)
-SMTP_SERVER = 'smtp.gmail.com'
-SMTP_PORT = 587  # Or your SMTP server's port
-EMAIL_FROM = 'support@blastedprints.com'
-EMAIL_TO = 'support@blastedprints.com'  # Or the recipient's email
-EMAIL_PASSWORD = 'kvhf pdfg ewle iizz'
-MINIMUM_QUANTITY = 4
+from config import *
 
 def check_and_send_low_stock_email():
-    url = f'https://openapi.etsy.com/v3/application/shops/{ETSY_SHOP_ID}/listings/active'
-    headers = {'x-api-key': ETSY_API_KEY}
+    url = f'https://openapi.etsy.com/v3/application/shops/{config.ETSY_SHOP_ID}/listings/active'
+    headers = {'x-api-key': config.ETSY_API_KEY}
 
     response = requests.get(url, headers=headers)
 
@@ -31,7 +20,7 @@ def check_and_send_low_stock_email():
         for listing in listings:
             for offering in listing['offerings']:
                 quantity = offering['quantity']
-                if quantity < MINIMUM_QUANTITY:
+                if quantity < config.MINIMUM_QUANTITY:
                     product_title = listing['title']
                     style = offering['property_values'][0]['value']  # Assuming the first property is style
                     low_stock_products.append(f"{product_title} - {style} ({quantity} left)")
@@ -50,13 +39,13 @@ def check_and_send_low_stock_email():
 
             msg = MIMEText(email_body, 'html')
             msg['Subject'] = 'Etsy Low Stock Alert'
-            msg['From'] = EMAIL_FROM
-            msg['To'] = EMAIL_TO
+            msg['From'] = config.EMAIL_FROM
+            msg['To'] = config.EMAIL_TO
 
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
                 server.starttls()
-                server.login(EMAIL_FROM, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+                server.login(config.EMAIL_FROM, config.EMAIL_PASSWORD)
+                server.sendmail(config.EMAIL_FROM, config.EMAIL_TO, msg.as_string())
 
             print(f"{datetime.now()}: Low stock email sent!")
         else:
