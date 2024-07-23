@@ -5,11 +5,11 @@ from email.mime.text import MIMEText
 import schedule
 import time
 from datetime import datetime
-from config import *
+from config import creds
 
 def check_and_send_low_stock_email():
-    url = f'https://openapi.etsy.com/v3/application/shops/{config.ETSY_SHOP_ID}/listings/active'
-    headers = {'x-api-key': config.ETSY_API_KEY}
+    url = f'https://openapi.etsy.com/v3/application/shops/{creds.ETSY_SHOP_ID}/listings/active'
+    headers = {'x-api-key': creds.ETSY_API_KEY}
 
     response = requests.get(url, headers=headers)
 
@@ -20,7 +20,7 @@ def check_and_send_low_stock_email():
         for listing in listings:
             for offering in listing['offerings']:
                 quantity = offering['quantity']
-                if quantity < config.MINIMUM_QUANTITY:
+                if quantity < creds.MINIMUM_QUANTITY:
                     product_title = listing['title']
                     style = offering['property_values'][0]['value']  # Assuming the first property is style
                     low_stock_products.append(f"{product_title} - {style} ({quantity} left)")
@@ -39,13 +39,13 @@ def check_and_send_low_stock_email():
 
             msg = MIMEText(email_body, 'html')
             msg['Subject'] = 'Etsy Low Stock Alert'
-            msg['From'] = config.EMAIL_FROM
-            msg['To'] = config.EMAIL_TO
+            msg['From'] = creds.EMAIL_FROM
+            msg['To'] = creds.EMAIL_TO
 
-            with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
+            with smtplib.SMTP(creds.SMTP_SERVER, creds.SMTP_PORT) as server:
                 server.starttls()
-                server.login(config.EMAIL_FROM, config.EMAIL_PASSWORD)
-                server.sendmail(config.EMAIL_FROM, config.EMAIL_TO, msg.as_string())
+                server.login(creds.EMAIL_FROM, creds.EMAIL_PASSWORD)
+                server.sendmail(creds.EMAIL_FROM, creds.EMAIL_TO, msg.as_string())
 
             print(f"{datetime.now()}: Low stock email sent!")
         else:
@@ -54,7 +54,7 @@ def check_and_send_low_stock_email():
     else:
         print(f"{datetime.now()}: Error fetching Etsy listings: {response.status_code}")
 
-# Schedule the task to run daily at a specific time (e.g., 9 AM MST)
+# Schedule the task to run daily at a specific time (e.g., 9 AM UTC)
 schedule.every().day.at("07:16").do(check_and_send_low_stock_email)
 
 while True:
