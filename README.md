@@ -1,7 +1,7 @@
 # etsyLowInventoryCheck
 Lightweight application to periodically check each Etsy listing in your shop and send an email if a particular variant in a listing is low in stock.
 
-## Purpoose
+## Purpose
 Never run low on your Etsy shop's inventory again! Stay in the know when each individual listing's variations runs low with an email sent to your inbox.
 
 ## Getting Started
